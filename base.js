@@ -1,4 +1,3 @@
-
 let wall = 2;
 let spaceBetweenFloorAndPlatine = 8;
 
@@ -31,6 +30,21 @@ function notch(){
     );
 }
 
+function notch5VSide(){
+    let x=wall;
+    let y=11;
+    let z=9;
+    
+    let offsetX = outerX - wall;
+    let offsetY = (outerY - y) / 2;
+    let offsetZ = spaceBetweenFloorAndPlatine + wall + 1;
+    
+    return translate(
+        [offsetX, offsetY, offsetZ],
+        cube({size:[x,y,z]})
+        );
+}
+
 function base() {
     let b = difference(
         cube({ size: [outerX, outerY, outerZ] }),
@@ -39,7 +53,9 @@ function base() {
             cube({ size: [outerX - wall * 2, outerY - wall * 2, outerZ - wall] })
         )
     );
-    return difference(b,notch());
+    b = difference(b,notch());
+    b = difference(b,notch5VSide());
+    return b;
 }
 
 function cornerCubes() {
