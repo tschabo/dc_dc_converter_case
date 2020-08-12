@@ -1,4 +1,4 @@
-let wall = 1.4;
+let wall = 2;
 let rBallNotch = 1;
 let spaceBetweenFloorAndPlatine = 8;
 
@@ -46,14 +46,14 @@ function notch5VSide(){
         );
 }
 
-function ballNotches(rBall){
+function ballNotches(rBall, oY){
     let s = sphere({r: rBall, center: true});
     let all = s;
     for(let x = 0; x < 2; x++){
         for(let y = 0; y < 2; y++){
             if(x==0 && y==0)
                 continue;
-            all = union(all,translate([(outerX/4*3)*x, outerY*y, 0],s));
+            all = union(all,translate([(outerX/4*3)*x, (outerY+oY+oY)*y, 0],s));
         }
     }
     return translate([outerX/8,0,outerZ-2], all);
@@ -69,7 +69,7 @@ function base() {
     );
     b = difference(b,notch());
     b = difference(b,notch5VSide());
-    b = difference(b,ballNotches(rBallNotch));
+    b = difference(b,ballNotches(rBallNotch, 0));
     return b;
 }
 
@@ -109,7 +109,7 @@ function lower(){
 }
 
 ///////////////////////////////////////////////
-let gap = .2;
+let gap = .3;
 uOuterX = outerX + wall*2 + 2*gap;
 uOuterY = outerY + wall*2 + 2*gap;
 uOuterZ = 4 + wall + gap;
@@ -137,14 +137,43 @@ function uBase(){
     return o(c);
 }
 
-function upper(){
+function addBallNotches(){
     let b = uBase();
-    return union(b, ballNotches(0.95));
+    return union(
+        b,
+        translate(
+            [0,-gap,0],
+            ballNotches(.8, gap)
+        )
+    );
+}
+function clampToTheBolts(){
+    let platineHeight = 1;
+    let _h = outerZ + gap - platineHeight - cornerCubeZ;
+    let bolt = difference(
+        cylinder({r: holeR+2 , h: _h, center: [true,true,false]}),
+        cylinder({r: holeR , h: _h, center: [true,true,false]})
+        ) ;
+    let all = bolt;
+    for(let x = 0; x < 2; x++){
+        for(let y = 0; y < 2; y++){
+            if(x == 0 && y == 0)
+                continue;
+            all = union(all, translate([x*holeCenterX, y*holeCenterY,0], bolt));
+        }
+    }
+    return translate([(outerX-holeCenterX)/2, (outerY-holeCenterY)/2,cornerCubeZ+platineHeight],all);
+}
+
+function upper(){
+    let b = addBallNotches();
+    b = union(b, clampToTheBolts());
+    return b;
 }
 
 function main() {
     return [
-        //upper() ,
+        upper() ,
         lower()
     ];
 }
