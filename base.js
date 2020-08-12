@@ -1,4 +1,5 @@
-let wall = 2;
+let wall = 1.4;
+let rBallNotch = 1;
 let spaceBetweenFloorAndPlatine = 8;
 
 let platineX = 61;
@@ -45,6 +46,19 @@ function notch5VSide(){
         );
 }
 
+function ballNotches(rBall){
+    let s = sphere({r: rBall, center: true});
+    let all = s;
+    for(let x = 0; x < 2; x++){
+        for(let y = 0; y < 2; y++){
+            if(x==0 && y==0)
+                continue;
+            all = union(all,translate([(outerX/4*3)*x, outerY*y, 0],s));
+        }
+    }
+    return translate([outerX/8,0,outerZ-2], all);
+}
+
 function base() {
     let b = difference(
         cube({ size: [outerX, outerY, outerZ] }),
@@ -55,6 +69,7 @@ function base() {
     );
     b = difference(b,notch());
     b = difference(b,notch5VSide());
+    b = difference(b,ballNotches(rBallNotch));
     return b;
 }
 
@@ -89,10 +104,47 @@ function withCornercubes(){
     return union(base(), cornerCubes());
 }
 
-function withCornercubesAndBolts(){
+function lower(){
     return union(withCornercubes(), bolts());
 }
 
+///////////////////////////////////////////////
+let gap = .2;
+uOuterX = outerX + wall*2 + 2*gap;
+uOuterY = outerY + wall*2 + 2*gap;
+uOuterZ = 4 + wall + gap;
+
+uInnerX = outerX + 2*gap;
+uInnerY = outerY + 2*gap;
+uInnerZ = uOuterZ - wall;
+
+uOffsetX = - wall - gap;
+uOffsetY = - wall - gap;
+uOffsetZ = outerZ - uInnerZ + gap;
+
+function o(obj){
+    return translate([uOffsetX,uOffsetY,uOffsetZ],obj);
+}
+
+function uBase(){
+    c = difference(
+        cube({size:[uOuterX,uOuterY,uOuterZ]}),
+        translate(
+            [wall,wall,0],
+            cube({size:[uInnerX,uInnerY,uInnerZ]})
+        )
+    )
+    return o(c);
+}
+
+function upper(){
+    let b = uBase();
+    return union(b, ballNotches(0.95));
+}
+
 function main() {
-    return withCornercubesAndBolts()
+    return [
+        //upper() ,
+        lower()
+    ];
 }
